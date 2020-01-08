@@ -9,7 +9,7 @@ function projectExists{
     $projectExists = az devops project list --org $org --query "[?name == '$($projectName)'].id" -o json | ConvertFrom-Json
 
     if (!$projectExists) { Write-Host "Project not found" }
-    else { Write-Host "Project found with ID $($projectExists.id)" }
+    else { Write-Host "Project found with ID $($projectExists)" }
 
     return $projectExists
 }
@@ -38,10 +38,12 @@ function repoExists{
     )
 
     Write-Host "`nCheck if repository with name $($repoName) already exists. . . " 
-    $repo = az repos list --org $org -p $projectID --name $repoName --query "[?name == '$($repoName)'].id" -o json | ConvertFrom-Json
+    Write-Host "`nOrg: $($org)"
+    Write-Host "`nProjectID: $($projectID)"
+    $repo = az repos list --org $org -p $projectID --query "[?name == '$($repoName)'].id" -o json | ConvertFrom-Json
     
     if (!$repo) { Write-Host "Repo not found" }
-    else { Write-Host "Repo found with ID $($repo.id)" }
+    else { Write-Host "Repo found with ID $($repo)" }
 
     return $repo
 }

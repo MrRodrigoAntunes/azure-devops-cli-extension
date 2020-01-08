@@ -60,16 +60,14 @@ If (!(test-path $invokeRequestsPath)) {
 }
 
 # scaffolding
-$projectExists = projectExists -org $org -projectName $projectName 
-
-if (!$projectExists) { $projectID = createProject -org $org -projectName $projectName -process 'Agile' -sourceControl 'git' -visibility 'private' }
-else { $projectID = $projectExists.id }
+$projectID = projectExists -org $org -projectName $projectName 
+if (!$projectID) { $projectID = createProject -org $org -projectName $projectName -process 'Agile' -sourceControl 'git' -visibility 'private' }
 
 if ($repoName) {
 
-    $repoExists = repoExists -repoName $repoName -org $org -projectID $projectID
+    $repoID = repoExists -repoName $repoName -org $org -projectID $projectID
 
-    if (!$repoExists) 
+    if (!$repoID) 
     { 
         $repoID = createRepo  -repoName $repoName -org $org -projectID $projectID
 
@@ -89,9 +87,9 @@ else {
 
 # team set up
 if ($teamName) {
-    $teamExists = teamExists -org $org -teamName $teamName -projectID $projectID
+    $teamID = teamExists -org $org -teamName $teamName -projectID $projectID
 
-    if ($teamExists)
+    if (!$teamID)
     {
         $teamID = createTeam -org $org -teamName $teamName -projectID $projectID
         if ($teamMembers) {

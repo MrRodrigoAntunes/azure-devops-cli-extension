@@ -44,10 +44,10 @@ function teamExists {
         [string]$projectID
     )
     Write-Host "`nCheck if team with name $($teamName) exists. . . " 
-    $team = az devops team list --name $teamName --org $org -p $projectID --query "[?name == '$($teamName)'].id" -o json | ConvertFrom-Json
+    $team = az devops team list --org $org -p $projectID --query "[?name == '$($teamName)'].id" -o json | ConvertFrom-Json
 
     if (!$team) { Write-Host "Team not found" }
-    else { Write-Host "Team found with ID $($team.id)" }
+    else { Write-Host "Team found with ID $($team)" }
 
     return $team
 }
