@@ -1,4 +1,4 @@
-org=https://dev.azure.com/contoso
+org=https://dev.azure.com/mrrodant
 projectName=cliDemoScaffolding
 repoName=cli_repo
 repoToImport = https://github.com/ishitam8/snake.git
