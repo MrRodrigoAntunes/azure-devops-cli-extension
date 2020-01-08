@@ -30,6 +30,22 @@ function createProject{
     return $project.id
 }
 
+function repoExists{
+    param(
+        [String]$org,
+        [String]$projectID,
+        [String]$repoName
+    )
+
+    Write-Host "`nCheck if repository with name $($repoName) already exists. . . " 
+    $repo = az repos list --org $org -p $projectID --name $repoName --query "[?name == '$($repoName)'].id" -o json | ConvertFrom-Json
+    
+    if (!$repo) { Write-Host "Repo not found" }
+    else { Write-Host "Repo found with ID $($repo.id)" }
+
+    return $repo
+}
+
 function createRepo{
     param(
         [String]$org,

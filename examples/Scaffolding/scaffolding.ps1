@@ -67,14 +67,21 @@ else $projectID = $projectExists.id
 
 if ($repoName) {
 
-    $repoID = createRepo  -repoName $repoName -org $org -projectID $projectID
-    if ($repoToImport) {
-        importRepo -repoID $repoID -repoToImport $repoToImport -repoType 'Public' -org $org -projectID $projectID
-        if ($requiredReviewers -or $optionalReviewers) {
-            $policiesSet = set_policies -org $org -projectName $projectID -repoId $repoID -branch 'master' -requiredApprovers $requiredReviewers -optionalApprovers $optionalReviewers
-            Write-Host "`nBranch policies set for master"
+    $repoExists = repoExists -repoName $repoName -org $org -projectID $projectID
+
+    if (!$repoExists) 
+    { 
+        $repoID = createRepo  -repoName $repoName -org $org -projectID $projectID
+
+         if ($repoToImport) {
+            importRepo -repoID $repoID -repoToImport $repoToImport -repoType 'Public' -org $org -projectID $projectID
+            if ($requiredReviewers -or $optionalReviewers) {
+                $policiesSet = set_policies -org $org -projectName $projectID -repoId $repoID -branch 'master' -requiredApprovers $requiredReviewers -optionalApprovers $optionalReviewers
+                Write-Host "`nBranch policies set for master"
+            }
         }
     }
+    
 }
 else {
     Write-Host "`nSkipping repo creation as repo name is empty"
