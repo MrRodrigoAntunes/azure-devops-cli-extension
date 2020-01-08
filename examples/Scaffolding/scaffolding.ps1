@@ -89,45 +89,50 @@ else {
 
 # team set up
 if ($teamName) {
-    $teamID = createTeam -org $org -teamName $teamName -projectID $projectID
-    if ($teamMembers) {
-        $listGroups = az devops security group list --org $org -p $projectID -o json | ConvertFrom-Json
-        foreach ($grp in $listGroups.graphGroups) {
-            if ($grp.displayName -eq $teamName) {
-                # Add team members
-                addTeamMembers -org $org -teamMembersList $teamMembers -teamDescriptor $grp.descriptor
-                # create a team admin group and add it to this team
-                $teamAdminGroupName = $teamName + ' Admins'
-                $createTeamAdminsGroup = az devops security group create --org $org -p $projectID --name $teamAdminGroupName --groups $grp.descriptor -o json | ConvertFrom-Json 
-                Write-Host "`nCreated new admin group with name $($teamAdminGroupName) and added to the newly created team $teamName."
+    $teamExists = teamExists -org $org -teamName $teamName -projectID $projectID
 
-                if ($teamAdminMembers) {
-                    addTeamMembers -org $org -teamMembersList $teamAdminMembers -teamDescriptor $createTeamAdminsGroup.descriptor
-                }
-                # add this newly created Admin group as Team Administrators
-                addTeamAdmins -org $org -projectID $projectID -teamID $teamID -adminGrpDescriptor $createTeamAdminsGroup.descriptor
+    if ($teamExists)
+    {
+        $teamID = createTeam -org $org -teamName $teamName -projectID $projectID
+        if ($teamMembers) {
+            $listGroups = az devops security group list --org $org -p $projectID -o json | ConvertFrom-Json
+            foreach ($grp in $listGroups.graphGroups) {
+                if ($grp.displayName -eq $teamName) {
+                    # Add team members
+                    addTeamMembers -org $org -teamMembersList $teamMembers -teamDescriptor $grp.descriptor
+                    # create a team admin group and add it to this team
+                    $teamAdminGroupName = $teamName + ' Admins'
+                    $createTeamAdminsGroup = az devops security group create --org $org -p $projectID --name $teamAdminGroupName --groups $grp.descriptor -o json | ConvertFrom-Json 
+                    Write-Host "`nCreated new admin group with name $($teamAdminGroupName) and added to the newly created team $teamName."
 
-                #create Area for this team
-                createTeamArea -org $org -projectID $projectID -areaName $teamName
+                    if ($teamAdminMembers) {
+                        addTeamMembers -org $org -teamMembersList $teamAdminMembers -teamDescriptor $createTeamAdminsGroup.descriptor
+                    }
+                    # add this newly created Admin group as Team Administrators
+                    addTeamAdmins -org $org -projectID $projectID -teamID $teamID -adminGrpDescriptor $createTeamAdminsGroup.descriptor
 
-                # area path
-                $areaPath = $projectName + '\' + $teamName
-                configureDefaultArea -org $org -projectID $projectID -teamID $teamID -defaultAreaPath $areaPath
+                    #create Area for this team
+                    createTeamArea -org $org -projectID $projectID -areaName $teamName
+
+                    # area path
+                    $areaPath = $projectName + '\' + $teamName
+                    configureDefaultArea -org $org -projectID $projectID -teamID $teamID -defaultAreaPath $areaPath
                 
-                # Configure project level iterations with this group/team and grant permissions for admins group
-                $projectIterationNameForThisTeam = $teamName + ' iteration' 
-                $rootIterationId = projectLevelIterationsSettings -org $org -projectID $projectID -rootIterationName $projectIterationNameForThisTeam -subject $createTeamAdminsGroup.descriptor -allow $iterationsPermissionsBit -childIterationNamesList $childIterationNamesList
+                    # Configure project level iterations with this group/team and grant permissions for admins group
+                    $projectIterationNameForThisTeam = $teamName + ' iteration' 
+                    $rootIterationId = projectLevelIterationsSettings -org $org -projectID $projectID -rootIterationName $projectIterationNameForThisTeam -subject $createTeamAdminsGroup.descriptor -allow $iterationsPermissionsBit -childIterationNamesList $childIterationNamesList
             
-                if ($rootIterationId)
-                {
-                    #set backlog iteration ID
-                    $setBacklogIteration = az boards iteration team set-backlog-iteration --id $rootIterationId --team $teamID --org $org -p $projectID -o json | ConvertFrom-Json 
-                    Write-Host "`nSetting backlog iteration to : $($setBacklogIteration.backlogIteration.path)"
-                    # Boards General settings
-                    setUpGeneralBoardSettings -org $org -projectID $projectID -teamID $teamID -epics $true -stories $true -features $true 
+                    if ($rootIterationId)
+                    {
+                        #set backlog iteration ID
+                        $setBacklogIteration = az boards iteration team set-backlog-iteration --id $rootIterationId --team $teamID --org $org -p $projectID -o json | ConvertFrom-Json 
+                        Write-Host "`nSetting backlog iteration to : $($setBacklogIteration.backlogIteration.path)"
+                        # Boards General settings
+                        setUpGeneralBoardSettings -org $org -projectID $projectID -teamID $teamID -epics $true -stories $true -features $true 
                     
-                    # Add child iterations of backlog iteration to the given team
-                    setUpTeamIterations -org $org -projectName $projectName -teamID $teamID
+                        # Add child iterations of backlog iteration to the given team
+                        setUpTeamIterations -org $org -projectName $projectName -teamID $teamID
+                    }
                 }
             }
         }

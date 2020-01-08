@@ -37,6 +37,21 @@ function addTeamMembers {
     }
 }
 
+function teamExists {
+    param (
+        [string]$teamName,
+        [string]$org,
+        [string]$projectID
+    )
+    Write-Host "`nCheck if team with name $($teamName) exists. . . " 
+    $team = az devops team list --name $teamName --org $org -p $projectID --query "[?name == '$($teamName)'].id" -o json | ConvertFrom-Json
+
+    if (!$team) { Write-Host "Team not found" }
+    else { Write-Host "Team found with ID $($team.id)" }
+
+    return $team
+}
+
 function createTeam {
     param (
         [string]$teamName,
