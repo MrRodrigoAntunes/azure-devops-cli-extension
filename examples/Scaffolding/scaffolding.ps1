@@ -60,7 +60,10 @@ If (!(test-path $invokeRequestsPath)) {
 }
 
 # scaffolding
-$projectID = createProject -org $org -projectName $projectName -process 'Agile' -sourceControl 'git' -visibility 'private'
+$projectExists = projectExists -org $org -projectName $projectName 
+
+if (!$projectExists) { $projectID = createProject -org $org -projectName $projectName -process 'Agile' -sourceControl 'git' -visibility 'private' }
+else $projectID = $projectExists.id
 
 if ($repoName) {
 

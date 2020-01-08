@@ -1,3 +1,19 @@
+function projectExists{
+    param(
+        [String]$org,
+        [String]$projectName
+    )
+
+
+    Write-Host "`nCheck if project with name $($projectName) exists. . . " 
+    $projectExists = az devops project list --org $org --query "[?name == '$($projectName)'].id" -o json | ConvertFrom-Json
+
+    if (!$projectExists) { Write-Host "Project not found" }
+    else { Write-Host "Project found with ID $($projectExists.id)" }
+
+    return $projectExists
+}
+
 function createProject{
     param(
         [String]$org,
